@@ -1,0 +1,5 @@
+{
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "editor.indentSize": 2,
+  "editor.defaultFormatter": "charliermarsh.ruff"
+}
