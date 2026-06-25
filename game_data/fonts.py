@@ -19,4 +19,4 @@ class _FontLoader:
         return getattr(self._get_font(), name)
 
 
-Main_Font = _FontLoader("assets/fonts/main_font.ttf", 36)
+Main_Font = _FontLoader("assets/fonts/main_font.ttf", 24)
