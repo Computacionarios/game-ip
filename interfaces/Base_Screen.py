@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from utils.Button import Button
 
 if TYPE_CHECKING:
-  from src.Game import Game
+  from src import Game
 
 
 class ScreenBase:
