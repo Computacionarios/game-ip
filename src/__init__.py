@@ -1,5 +1,5 @@
-from .Game import Game
+from .batalha import iniciar_jogo
 
-__all__ = ['Game']
+__all__ = [iniciar_jogo]
 
-print('importando src')
+print("importando src")

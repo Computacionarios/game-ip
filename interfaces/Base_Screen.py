@@ -1,13 +1,9 @@
 import pygame
-from typing import TYPE_CHECKING
 from utils.Button import Button
-
-if TYPE_CHECKING:
-  from src import Game
 
 
 class ScreenBase:
-  def __init__(self, game: "Game"):
+  def __init__(self, game):
     self.game = game
 
     self.selectables: list[Button] = [None]

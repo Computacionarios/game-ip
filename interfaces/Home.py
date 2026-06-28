@@ -1,32 +1,30 @@
 import pygame
 from .Base_Screen import ScreenBase
 from utils import Button
-from game_data import background
+from game_data import BACKGROUND
+from src import iniciar_jogo
+
+
+class StartButton(Button):
+  def on_click(self, game):
+    iniciar_jogo(game)
+
+
+class ConfigButton(Button):
+  def on_click(self):
+    print("config")
 
 
 class Home(ScreenBase):
   def __init__(self, game):
     super().__init__(game)
-
-    start_btn_size = start_btn_width, start_btn_height = (90, 40)
-    self.start_btn = Button(
+    self.start_btn = StartButton(
       game._screen,
-      start_btn_size,
-      (
-        game._screen.width / 2 - start_btn_width - 20,
-        game._screen.height - start_btn_height - 50,
-      ),
       "Começar",
     )
 
-    config_btn_size = config_btn_width, config_btn_height = (110, 40)
-    self.config_btn = Button(
+    self.config_btn = ConfigButton(
       game._screen,
-      config_btn_size,
-      (
-        game._screen.width / 2 + 20,
-        game._screen.height - config_btn_height - 50,
-      ),
       "Configurar",
     )
 
@@ -55,10 +53,29 @@ class Home(ScreenBase):
           self.surf("p")
           self.selected_btn.on_hover()
 
-  def render(self, screen: pygame.Surface):
-    screen.fill(background)
-    self.start_btn.render()
-    self.config_btn.render()
+        if event.key == pygame.K_SPACE:
+          self.selected_btn.on_click(self.game)
+
+  def render(self, ):
+    self.game._screen.fill(BACKGROUND)
+    start_btn_size = start_btn_width, start_btn_height = (90, 40)
+
+    self.start_btn.render(
+      start_btn_size,
+      (
+        self.game._screen.width / 2 - start_btn_width - 20,
+        self.game._screen.height - start_btn_height - 50,
+      ),
+    )
+
+    config_btn_size = config_btn_width, config_btn_height = (110, 40)
+    self.config_btn.render(
+      config_btn_size,
+      (
+        self.game._screen.width / 2 + 20,
+        self.game._screen.height - config_btn_height - 50,
+      ),
+    )
     pygame.draw.line(
-      screen, (200, 200, 200), (screen.width / 2, 0), (screen.width / 2, screen.height)
+      self.game._screen, (200, 200, 200), (self.game._screen.width / 2, 0), (self.game._screen.width / 2, self.game._screen.height)
     )
