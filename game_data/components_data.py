@@ -1,1 +1,0 @@
-button_border_thickness = 4
