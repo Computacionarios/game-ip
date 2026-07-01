@@ -146,13 +146,27 @@ class Batalha:
         self.jogador.defesa_atual = 0
         self.cpu.defesa_atual     = 0
         self.cpu.escolher_combo()
+        
+        # Calcula a velocidade no turno (Lentidão reduz a velocidade pela metade)
+        vel_jogador = self.jogador.speed / 2 if self.jogador.lentidao > 0 else self.jogador.speed
+        vel_cpu = self.cpu.speed / 2 if self.cpu.lentidao > 0 else self.cpu.speed
+
+        # Inicia a fila com os efeitos de status que acontecem antes dos ataques
         self._fila = [
             ("efeitos",      self.jogador, None),
             ("efeitos",      self.cpu,     None),
-            ("jogador_usa",  self.jogador, self.cpu),
-            ("cpu_usa",      self.cpu,     self.jogador),
-            ("fim_turno",    None,         None),
         ]
+        
+        # Compara as velocidades para definir a ordem das ações
+        if vel_jogador >= vel_cpu:
+            self._fila.append(("jogador_usa",  self.jogador, self.cpu))
+            self._fila.append(("cpu_usa",      self.cpu,     self.jogador))
+        else:
+            self._fila.append(("cpu_usa",      self.cpu,     self.jogador))
+            self._fila.append(("jogador_usa",  self.jogador, self.cpu))
+        
+        # Finaliza a montagem adicionando o encerramento do turno
+        self._fila.append(("fim_turno",    None,         None))
         self._estado = _ANIMANDO
         self._executar_proxima()
 
