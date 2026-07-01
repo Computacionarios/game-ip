@@ -1,8 +1,7 @@
 # arquivo dos inimigos alterados para o uso da biblioteca pygame - teste
 
 import random
-import pygame 
-from jogador import Personagem
+from .jogador import Personagem
 
 class CPU(Personagem): 
     def __init__(self, nome="CPU", x=0, y=0): 

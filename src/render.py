@@ -2,7 +2,7 @@
 
 import pygame
 import sys
-from batalha import Batalha
+from .batalha import Batalha
 
 # Cores padrão importadas para a interface
 COR_DESTAQUE = (255, 215, 0)

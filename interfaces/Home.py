@@ -6,8 +6,8 @@ from src import iniciar_jogo
 
 
 class StartButton(Button):
-  def on_click(self, game):
-    iniciar_jogo(game)
+  def on_click(self):
+    iniciar_jogo()
 
 
 class ConfigButton(Button):
@@ -54,7 +54,7 @@ class Home(ScreenBase):
           self.selected_btn.on_hover()
 
         if event.key == pygame.K_SPACE:
-          self.selected_btn.on_click(self.game)
+          self.selected_btn.on_click()
 
   def render(self, ):
     self.game._screen.fill(BACKGROUND)
