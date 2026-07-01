@@ -125,8 +125,9 @@ def resolver_magia(usuario, alvo, acao, forma, elemento, estado):
         msg = f"{usuario.nome} usou Forja Celular! (+{ganho} HP)"
     elif combo == ("cura", "circulo", "metal"):
         ganho = usuario.curar(20)
-        usuario.imune_envenenamento = 3 
-        msg = f"{usuario.nome} usou Sutura de Mercúrio! (+{ganho} HP, Imune Envenenamento)"
+        usuario.imune_envenenamento = 3
+        usuario.envenenamento = 0 
+        msg = f"{usuario.nome} usou Sutura de Mercúrio! (+{ganho} HP, Envenenamento Removido, imunidade a veneno aplicada!)"
 
     elif combo == ("cura", "triangulo", "borracha"):
         ganho = usuario.curar(70)
@@ -136,8 +137,9 @@ def resolver_magia(usuario, alvo, acao, forma, elemento, estado):
         msg = f"{usuario.nome} usou fricção Curativa! (+{ganho} HP)"
     elif combo == ("cura", "circulo", "borracha"):
         ganho = usuario.curar(30)
-        usuario.imune_envenenamento = 3 
-        msg = f"{usuario.nome} usou Forma Restauradora! (+{ganho} HP, Imune Envenenamento)"
+        usuario.imune_envenenamento = 3
+        usuario.envenenamento = 0 
+        msg = f"{usuario.nome} usou Sutura de Mercúrio! (+{ganho} HP, Envenenamento Removido, imunidade a veneno aplicada!)"
 
     alvo.defesa_atual = 0 
     
