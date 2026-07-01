@@ -1,6 +1,6 @@
 import pygame
 
-class  comp_donpc:
+class  comp_donpcmapa:
     def __init__(self, tela, velocidade, percurso, npc_larg_hitbox, npc_alt_hitbox):  
 
         #Tela em que o rect será gerado
