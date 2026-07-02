@@ -1,6 +1,5 @@
 import pygame
-import sprites
-from inventario import Inventario
+import sprites as sprite
 
 pygame.init()
 
@@ -9,89 +8,96 @@ inventario = Inventario()
 
 
 ###TELA###
-tamanho_tela = (1280, 720)
-tela = pygame.display.set_mode(tamanho_tela)
+tamanho_tela = pygame.display.get_desktop_sizes()
+# tamanho_tela[0] -= 40
+tela = pygame.display.set_mode(tamanho_tela[0])
 pygame.display.set_caption("Aventura Magica")
 
-mapa = pygame.image.load("game-ip/assets/images/Mapa.png").convert_alpha()
-mapa =  pygame.transform.scale(mapa, (7955, 4940))
+mapa = pygame.image.load("assets/images/Mapa.png").convert_alpha()
+mapa = pygame.transform.scale(mapa, (7955, 4940))
+
 
 ###PLAYER###
 class Player:
-    def __init__(self):
-        self.x = 1280/2
-        self.y = 720-32/2
+  def __init__(self):
+    self.x = 1280 / 2
+    self.y = 720 - 32 / 2
 
-        self.run_costas, self.run_frente, self.run_esquerda, self.run_direita, self.parado = sprites.movimento_player()
+    (
+      self.run_costas,
+      self.run_frente,
+      self.run_esquerda,
+      self.run_direita,
+      self.parado,
+    ) = sprite.movimento_player()
 
+    self.frame = 0
+    self.atual_pos = 0
+    self.imagem = self.parado[0]
+
+  def update(self):
+    tecla = pygame.key.get_pressed()
+    if tecla[pygame.K_a] or tecla[pygame.K_LEFT]:
+      self.frame += 0.1
+      self.x += 3
+      self.atual_pos = 1
+
+      if self.frame > len(self.run_esquerda):
         self.frame = 0
-        self.atual_pos = 0
-        self.imagem = self.parado[0]
 
-    def update(self):
-        tecla = pygame.key.get_pressed()
-        if tecla[pygame.K_a] or tecla[pygame.K_LEFT]:
-            self.frame += 0.1
-            self.x += 10
-            self.atual_pos = 1
+      self.imagem = self.run_esquerda[int(self.frame)]
 
-            if self.frame > len(self.run_esquerda):
-                self.frame = 0
+      if personagem.colliderect(barreira):
+        self.x -= 3
 
-            self.imagem = self.run_esquerda[int(self.frame)]
+    elif tecla[pygame.K_d] or tecla[pygame.K_RIGHT]:
+      self.frame += 0.1
+      self.x -= 3
+      self.atual_pos = 2
 
-            if personagem.colliderect(barreira):
-                self.x -= 11
+      if self.frame > len(self.run_direita):
+        self.frame = 0
 
-                
+      self.imagem = self.run_direita[int(self.frame)]
 
-        elif tecla[pygame.K_d] or tecla[pygame.K_RIGHT]:
-            self.frame += 0.1
-            self.x -= 10
-            self.atual_pos = 2
+      if personagem.colliderect(barreira):
+        self.x += 3
 
-            if self.frame > len(self.run_direita):
-                self.frame = 0
+    elif tecla[pygame.K_w] or tecla[pygame.K_UP]:
+      self.frame += 0.1
+      self.y += 3
+      self.atual_pos = 3
 
-            self.imagem = self.run_direita[int(self.frame)]
+      if self.frame > len(self.run_costas):
+        self.frame = 0
 
-            if personagem.colliderect(barreira):
-                self.x += 11
+      self.imagem = self.run_costas[int(self.frame)]
 
-        elif tecla[pygame.K_w] or tecla[pygame.K_UP]:
-            self.frame += 0.1
-            self.y += 10
-            self.atual_pos = 3
+      if personagem.colliderect(barreira):
+        self.y -= 3
 
-            if self.frame > len(self.run_costas):
-                self.frame = 0
+    elif tecla[pygame.K_s] or tecla[pygame.K_DOWN]:
+      self.frame += 0.1
+      self.y -= 3
+      self.atual_pos = 0
 
-            self.imagem = self.run_costas[int(self.frame)]
+      if self.frame > len(self.run_frente):
+        self.frame = 0
 
-            if personagem.colliderect(barreira):
-                self.y -= 11
+      self.imagem = self.run_frente[int(self.frame)]
 
-        elif tecla[pygame.K_s] or tecla[pygame.K_DOWN]:
-            self.frame += 0.1
-            self.y -= 10
-            self.atual_pos = 0
+      if personagem.colliderect(barreira):
+        self.y -= 3
 
-            if self.frame > len(self.run_frente):
-                self.frame = 0
+    else:
+      self.frame = 0
+      self.imagem = self.parado[self.atual_pos]
 
-            self.imagem = self.run_frente[int(self.frame)]
+  def draw(self, tela):
+    tamanho_sprite = (96, 96)
+    personagem = pygame.transform.scale(self.imagem, tamanho_sprite)
+    tela.blit(personagem, (1280 // 2, 720 // 2))
 
-            if personagem.colliderect(barreira):
-                self.y -= 11
-
-        else:
-            self.frame = 0
-            self.imagem = self.parado[self.atual_pos]
-
-    def draw(self, tela):
-        tamanho_sprite = (96, 96)
-        personagem = pygame.transform.scale(self.imagem, tamanho_sprite)
-        tela.blit(personagem, (1280//2, 720//2))
 
 
 ###Coletavel###
@@ -154,80 +160,52 @@ continua = True
 carta_selecionada = True
 invent = False
 while continua:
-    ###Camera###
-    camera_x = player.x - 7955//2
-    camera_y = player.y - 4940//2
+  ###Camera###
+  camera_x = player.x - 7955 // 2
+  camera_y = player.y - 4940 // 2
 
-    ###BARREIRA###
-    barreira = pygame.Rect(camera_x, camera_y + 300, 7955, 300)
-    personagem = pygame.Rect(1280//2, 720//2, 96, 96)
-    carta = pygame.Rect(1280//2, 720//2, 96, 96)
+  ###BARREIRA###
+  barreira = pygame.Rect(camera_x, camera_y + 300, 7955, 300)
+  personagem = pygame.Rect(1280 // 2, 720 // 2, 96, 96)
 
+  time.tick(60)
+  tela.blit(mapa, (camera_x, camera_y))
 
-    time.tick(60)
-    tela.blit(mapa, (camera_x, camera_y))
+  for evento in pygame.event.get():
+    if evento.type == pygame.QUIT:
+      continua = False
 
-    if not invent:
-        player.update()
+  player.update()
 
-    cura.update_coletavel((542+50)*5 + camera_x, (419+50)*5 + camera_y)
-    cura1.update_coletavel((984+50)*5 + camera_x, (603+50)*5 + camera_y)
-    cura2.update_coletavel((745+50)*5 + camera_x, (794+50)*5 + camera_y)
-    cura3.update_coletavel((568+50)*5 + camera_x, (655+50)*5 + camera_y)
-    cura4.update_coletavel((187+50)*5 + camera_x, (384+50)*5 + camera_y)
-    cura5.update_coletavel((222+50)*5 + camera_x, (174+50)*5 + camera_y)
+  player.draw(tela)
 
-    mana.update_coletavel((1142+50)*5 + camera_x, (152+50)*5 + camera_y)
-    mana1.update_coletavel((684+50)*5 + camera_x, (258+50)*5 + camera_y)
-    mana2.update_coletavel((277+50)*5 + camera_x, (778+50)*5 + camera_y)
-    mana3.update_coletavel((245+50)*5 + camera_x, (636+50)*5 + camera_y)
-    mana4.update_coletavel((361+50)*5 + camera_x, (123+50)*5 + camera_y)
-    mana5.update_coletavel((529+50)*5 + camera_x, (171+50)*5 + camera_y)
+  frame1 += 0.1
+  frame2 += 0.1
+  frame3 += 0.1
 
-    imunidade.update_coletavel((1265+50)*5 + camera_x, (410+50)*5 + camera_y)
-    imunidade1.update_coletavel((858+50)*5 + camera_x, (665+50)*5 + camera_y)
-    imunidade2.update_coletavel((397+50)*5 + camera_x, (400+50)*5 + camera_y)
+  if frame1 > len(coletavel_forma):
+    frame1 = 0
+  if frame2 > len(coletavel_elemental):
+    frame2 = 0
+  if frame3 > len(coletavel_utilitario):
+    frame3 = 0
 
-    sprite_inventario = pygame.transform.scale(player.imagem, (96, 96))
-    inventario.definir_sprite_player(sprite_inventario)
+  imagem1 = coletavel_forma[int(frame1)]
+  imagem2 = coletavel_elemental[int(frame2)]
+  imagem3 = coletavel_utilitario[int(frame3)]
 
-    player.draw(tela)
+  tamanho_sprite = (64, 64)
 
-    cura.draw_coletavel(tela)
-    cura1.draw_coletavel(tela)
-    cura2.draw_coletavel(tela)
-    cura3.draw_coletavel(tela)
-    cura4.draw_coletavel(tela)
-    cura5.draw_coletavel(tela)
+  carta1 = pygame.transform.scale(imagem1, tamanho_sprite)
+  tela.blit(carta1, (1000 + camera_x, 2000 + camera_y))
 
-    mana.draw_coletavel(tela)
-    mana1.draw_coletavel(tela)
-    mana2.draw_coletavel(tela)
-    mana3.draw_coletavel(tela)
-    mana4.draw_coletavel(tela)
-    mana5.draw_coletavel(tela)
+  carta2 = pygame.transform.scale(imagem2, tamanho_sprite)
+  tela.blit(carta2, (2000 + camera_x, 1000 + camera_y))
 
-    imunidade.draw_coletavel(tela)
-    imunidade1.draw_coletavel(tela)
-    imunidade2.draw_coletavel(tela)
+  carta3 = pygame.transform.scale(imagem3, tamanho_sprite)
+  tela.blit(carta3, (3000 + camera_x, 2000 + camera_y))
 
-    if inventario.aberto:
-        inventario.desenhar_inventario(tela)
+  pygame.time.wait(1)
+  pygame.display.flip()
 
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            continua = False
-
-        inventario.captura_evento(evento)
-
-        if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_i:
-                inventario.abre_fecha_inventario()
-                invent = not invent
-
-
-    pygame.time.wait(1)
-    pygame.display.flip()
-
-    
 pygame.quit()

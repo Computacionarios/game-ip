@@ -2,6 +2,8 @@
 
 import pygame
 
+COR_DESTAQUE = (255, 215, 0)
+
 # Define a classe CartaComponente que herda de pygame.sprite.Sprite.
 class CartaComponente(pygame.sprite.Sprite): 
     
@@ -139,7 +141,7 @@ def resolver_magia(usuario, alvo, acao, forma, elemento, estado):
         ganho = usuario.curar(30)
         usuario.imune_envenenamento = 3
         usuario.envenenamento = 0 
-        msg = f"{usuario.nome} usou Sutura de Mercúrio! (+{ganho} HP, Envenenamento Removido, imunidade a veneno aplicada!)"
+        msg = f"{usuario.nome} usou Forma Restauradora! (+{ganho} HP, Envenenamento Removido, imunidade a veneno aplicada!)"
 
     alvo.defesa_atual = 0 
     
@@ -176,3 +178,37 @@ def obter_deck_elemento():
         CartaComponente("Borracha", "elemento", "borracha", "Alta Cura", (20, 120, 220)),
         CartaComponente("Voltar", "voltar", "voltar", "Voltar etapa", (100, 100, 100)) 
     ]
+
+def desenhar_carta(tela, carta, x, y, destacada, fonte_nome, fonte_desc):
+    carta.rect.x = x
+    carta.rect.y = y
+    
+    # Desenha o corpo da carta
+    tela.blit(carta.image, carta.rect)
+    
+    # Renderiza o nome da carta
+    texto_nome = fonte_nome.render(carta.nome, True, (255, 255, 255))
+    tela.blit(texto_nome, (carta.rect.x + 10, carta.rect.y + 10))
+    
+    # Quebra de linhas para a descrição
+    palavras = carta.descricao.split()
+    linhas = []
+    linha_atual = ""
+    for p in palavras:
+        if len(linha_atual) + len(p) < 18:
+            linha_atual += p + " "
+        else:
+            linhas.append(linha_atual)
+            linha_atual = p + " "
+    linhas.append(linha_atual)
+
+    # Desenha a descrição
+    y_offset = 120
+    for linha in linhas:
+        texto_desc = fonte_desc.render(linha, True, (240, 240, 240))
+        tela.blit(texto_desc, (carta.rect.x + 5, carta.rect.y + y_offset))
+        y_offset += 20
+        
+    # Se a carta estiver selecionada, desenha a borda dourada nela
+    if destacada:
+        pygame.draw.rect(tela, COR_DESTAQUE, carta.rect, 4)
