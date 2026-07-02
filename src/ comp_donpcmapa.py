@@ -96,6 +96,12 @@ def iniciar_jogo():
     estado_jogo = "EXPLORACAO" # Começa no mapa
     instancia_batalha = None
 
+    #  variaveis para o controle do fade
+    em_transicao = False
+    alpha_fade = 0
+    fade_speed = 10 # Controla o quão rápido a tela escurece/clareia
+    estado_destino = None
+
     rodando = True
     while rodando:
         LARGURA, ALTURA = tela.get_size()
@@ -111,8 +117,8 @@ def iniciar_jogo():
             if evento.type == pygame.VIDEORESIZE:
                 tela = pygame.display.set_mode((evento.w, evento.h), pygame.RESIZABLE)
                 
-            # Inputs específicos de Batalha
-            if estado_jogo == "BATALHA":
+            # Inputs específicos de Batalha (Bloqueados durante o fade)
+            if estado_jogo == "BATALHA" and not em_transicao:
                 if evento.type == pygame.KEYDOWN:
                     if instancia_batalha.aguardando_input:
                         if (evento.key == pygame.K_LEFT) or (evento.key == pygame.K_a):
@@ -122,19 +128,21 @@ def iniciar_jogo():
                         elif evento.key in (pygame.K_RETURN, pygame.K_SPACE):
                             instancia_batalha.input("usar")
                     elif instancia_batalha.encerrada:
-                        # Se a batalha acabou, pressionar ESC ou ENTER volta pro mapa
+                        # Se a batalha acabou, pressionar ESC ou ENTER inicia o Fade para voltar
                         if evento.key in (pygame.K_ESCAPE, pygame.K_RETURN, pygame.K_SPACE):
-                            estado_jogo = "EXPLORACAO"
-                            npc_ativo = False # Remove o NPC derrotado do mapa
+                            em_transicao = True
+                            estado_destino = "EXPLORACAO"
 
         # LÓGICA E RENDERIZAÇÃO POR ESTADO
         if estado_jogo == "EXPLORACAO":
-            # Movimentação do jogador
-            teclas = pygame.key.get_pressed()
-            if teclas[pygame.K_LEFT] or teclas[pygame.K_a]: jogador_mapa.x -= vel_jogador
-            if teclas[pygame.K_RIGHT] or teclas[pygame.K_d]: jogador_mapa.x += vel_jogador
-            if teclas[pygame.K_UP] or teclas[pygame.K_w]: jogador_mapa.y -= vel_jogador
-            if teclas[pygame.K_DOWN] or teclas[pygame.K_s]: jogador_mapa.y += vel_jogador
+            
+            # Movimentação do jogador (Bloqueada durante o fade)
+            if not em_transicao:
+                teclas = pygame.key.get_pressed()
+                if teclas[pygame.K_LEFT] or teclas[pygame.K_a]: jogador_mapa.x -= vel_jogador
+                if teclas[pygame.K_RIGHT] or teclas[pygame.K_d]: jogador_mapa.x += vel_jogador
+                if teclas[pygame.K_UP] or teclas[pygame.K_w]: jogador_mapa.y -= vel_jogador
+                if teclas[pygame.K_DOWN] or teclas[pygame.K_s]: jogador_mapa.y += vel_jogador
 
             # Desenha o Jogador na cor Azul
             pygame.draw.rect(tela, (0, 128, 255), jogador_mapa)
@@ -142,15 +150,44 @@ def iniciar_jogo():
             # Atualiza o NPC e checa colisão
             if npc_ativo:
                 iniciou_batalha = npc.atualizar(jogador_mapa)
-                if iniciou_batalha:
-                    # Transição para o estado de Batalha
-                    estado_jogo = "BATALHA"
-                    instancia_batalha = Batalha("Herói")
+                # Só inicia a transição se já não estiver em uma
+                if iniciou_batalha and not em_transicao:
+                    em_transicao = True
+                    estado_destino = "BATALHA"
 
         elif estado_jogo == "BATALHA":
             # Roda a lógica e a renderização da batalha
             instancia_batalha.tick()
             renderizar_batalha(tela, instancia_batalha, LARGURA, ALTURA, fonte_log, fonte_carta_desc)
+
+        # --- fade renderizada por cima do jogo ---
+        if em_transicao:
+            # Cria a superfície do fade no tamanho atual da tela (útil se foi redimensionada)
+            superficie_fade = pygame.Surface((LARGURA, ALTURA))
+            superficie_fade.fill((0, 0, 0)) # Cor do Fade (Preto)
+
+            if estado_jogo != estado_destino:
+                # TELA ESCURECENDO (Fade OUT)
+                alpha_fade += fade_speed
+                if alpha_fade >= 255:
+                    alpha_fade = 255
+                    estado_jogo = estado_destino # Efetua a troca de estado oculta no escuro
+                    
+                    # Inicializações dependentes do estado
+                    if estado_jogo == "BATALHA":
+                        instancia_batalha = Batalha("Herói")
+                    elif estado_jogo == "EXPLORACAO":
+                        npc_ativo = False # Remove o NPC derrotado do mapa
+            else:
+                # TELA CLAREANDO (Fade IN)
+                alpha_fade -= fade_speed
+                if alpha_fade <= 0:
+                    alpha_fade = 0
+                    em_transicao = False # Encerra o fade e devolve o controle ao jogador
+
+            superficie_fade.set_alpha(alpha_fade)
+            tela.blit(superficie_fade, (0, 0))
+
 
         # ATUALIZAÇÃO DA TELA
         pygame.display.flip()
