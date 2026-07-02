@@ -1,21 +1,18 @@
 import pygame
-from Settings import (
-  pallet_colors,
-  BORDER,
-)
+from Settings import pallet_colors, BORDER, PALLET_WIDTH
 
 
 class Pallet:
   def __init__(self, pos_x: int, pos_y: int = BORDER):
-
     self.selected_color = 0
-    self.pallet_width = 80
+    PALLET_WIDTH
     self.ink_heigth = 50
     self.gap = 2
 
     self.pos_x = pos_x
     self.pos_y = pos_y
-    self.width = self.pallet_width + BORDER
+
+    self.width = PALLET_WIDTH + BORDER
     self.heigth = (self.ink_heigth + self.gap) * len(pallet_colors)
 
   def draw_pallet(self, screen: pygame.Surface):

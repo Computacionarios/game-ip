@@ -1,26 +1,32 @@
 import pygame
 import pygame.locals as pg_lc
-from Settings import screen_colors
+
+from Settings import screen_colors, CANVAS_SIZE, PALLET_WIDTH, BORDER
 from src.Canvas import Canvas
 from src.Pallet import Pallet
 
 pygame.init()
 pygame.display.set_caption("Map Maker")
 
-canvas = Canvas()
-pallet = Pallet(canvas.size)
+sur = pygame.Surface(
+  (CANVAS_SIZE[0] + PALLET_WIDTH + BORDER * 3, CANVAS_SIZE[1] + BORDER * 2),
+  pygame.SRCALPHA,
+)
+screen = pygame.display.set_mode(
+  (CANVAS_SIZE[0] + PALLET_WIDTH + BORDER * 3, CANVAS_SIZE[1] + BORDER * 2),
+  pygame.RESIZABLE,
+)
+screen.blit(sur, (0, 0))
 
-screen = pygame.display.set_mode((canvas.size + pallet.width, canvas.size))
-screen.fill(screen_colors["bg_color"])
-
-canvas.draw_grid(screen)
+pallet = Pallet(screen.width - PALLET_WIDTH - BORDER)
+canvas = Canvas(screen)
+pallet.draw_pallet(screen)
 
 running_game = True
 while running_game:
-  pallet.draw_pallet(screen)
   for event in pygame.event.get():
     if event.type == pg_lc.QUIT:
-      canvas.save_game()
+      canvas.save_map()
       running_game = False
 
     if event.type == pg_lc.KEYDOWN:
@@ -32,12 +38,12 @@ while running_game:
     canvas.draw(pallet.selected_color)
 
   if pygame.mouse.get_pressed()[1]:
-    canvas.clean_all(screen)
+    canvas.clean_all()
 
   if pygame.mouse.get_pressed()[2]:
     canvas.draw(-1)
 
-  canvas.draw_grid(screen)
+  screen.blit(canvas.canvas, (BORDER, BORDER))
   pygame.display.update()
 
 pygame.quit()

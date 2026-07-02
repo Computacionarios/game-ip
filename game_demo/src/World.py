@@ -20,10 +20,10 @@ class World:
 
   def load_save(self):
     try:
-      with open("game_demo/data/cache.json") as world:
+      with open("C:/Users/mvhx/Documents/game-ip/data/cache.json") as world:
         self.map = json.load(world)
 
-      with open("game_demo/data/settings.json") as settings:
+      with open("C:/Users/mvhx/Documents/game-ip/data/settings.json") as settings:
         self.settings = json.load(settings)
     except FileNotFoundError:
       print("Mapa não encontrado")
