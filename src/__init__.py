@@ -1,3 +1,3 @@
-from .render import iniciar_jogo
-
-__all__ = [iniciar_jogo]
+from .comp_donpcmapa import iniciar_jogo
+from .batalha import Batalha
+__all__ = [iniciar_jogo, Batalha]

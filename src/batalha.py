@@ -1,8 +1,8 @@
 # arquivo de batalha em pygame - teste
 
-from jogador import Personagem, desenhar_personagem
-from inimigos import CPU
-from cartas import obter_deck_acao, obter_deck_utilitarios, obter_deck_forma, obter_deck_elemento, resolver_magia, desenhar_carta
+from .jogador import Personagem, desenhar_personagem
+from .inimigos import CPU
+from .cartas import obter_deck_acao, obter_deck_utilitarios, obter_deck_forma, obter_deck_elemento, resolver_magia, desenhar_carta
 
 # PREPARAÇÃO PARA O INVENTÁRIO (Desabilitado até a criação do arquivo)
 try:
