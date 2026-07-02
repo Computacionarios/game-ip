@@ -16,7 +16,7 @@ class Player(pygame.sprite.Sprite):
     self.direction = "l"
     self.flip = False
 
-    img = pygame.image.load("game_demo/assets/imgs/player/0.png")
+    img = pygame.image.load("C:/Users/mvhx/Documents/game-ip/game_demo/assets/imgs/player/0.png")
     self.sprit = pygame.transform.scale(img, (img.width * scale, img.height * scale))
     self.rect = self.sprit.get_rect()
     self.rect.center = (x, y)
