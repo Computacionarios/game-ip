@@ -79,4 +79,45 @@ class Personagem(pygame.sprite.Sprite):
         if not self.vivo:
             self.image.fill((100, 100, 100)) 
 
+def desenhar_personagem(tela, personagem, fonte_status):
+    # Desenha o personagem
+    tela.blit(personagem.image, personagem.rect)
+    
+    # Pega a altura real da fonte para calcular um espaçamento perfeito
+    altura_fonte = fonte_status.get_height()
+    
+    # Nome (Fica mais alto, 3.5 linhas acima do personagem)
+    y_nome = personagem.rect.y - (altura_fonte * 3.5)
+    texto_nome = fonte_status.render(personagem.nome, True, (255, 255, 255))
+    tela.blit(texto_nome, (personagem.rect.x, y_nome))
+
+    # Configurações das barras
+    largura_barra = 60
+    altura_barra = 12
+    
+    # Vida (HP) (Fica 2 linhas acima do personagem)
+    cor_hp = (0, 255, 0) if personagem.hp_pct > 0.3 else (255, 0, 0)
+    y_hp_barra = personagem.rect.y - (altura_fonte * 2)
+    y_hp_texto = y_hp_barra - (altura_fonte // 4) # Ajuste fino para alinhar texto e barra
+    
+    pygame.draw.rect(tela, (255, 0, 0), (personagem.rect.x, y_hp_barra, largura_barra, altura_barra)) # Fundo
+    pygame.draw.rect(tela, cor_hp, (personagem.rect.x, y_hp_barra, largura_barra * personagem.hp_pct, altura_barra)) # Vida atual
+
+    texto_hp = fonte_status.render(f"HP: {personagem.hp}/{personagem.HP_MAX}", True, (255, 255, 255))
+    tela.blit(texto_hp, (personagem.rect.x + largura_barra + 10, y_hp_texto))
+    
+    # Pontos Mágicos (MP) (Fica 1 linha acima do personagem)
+    y_mp_barra = personagem.rect.y - altura_fonte
+    y_mp_texto = y_mp_barra - (altura_fonte // 4)
+    
+    pygame.draw.rect(tela, (50, 50, 50), (personagem.rect.x, y_mp_barra, largura_barra, altura_barra)) # Fundo
+    pygame.draw.rect(tela, (0, 150, 255), (personagem.rect.x, y_mp_barra, largura_barra * personagem.mp_pct, altura_barra)) # MP atual
+    
+    texto_mp = fonte_status.render(f"MP: {personagem.mp}", True, (255, 255, 255))
+    tela.blit(texto_mp, (personagem.rect.x + largura_barra + 10, y_mp_texto))
+
+    # Textos de Status (Ficam abaixo do personagem)
+    texto_status = fonte_status.render(personagem.status_str(), True, (255, 255, 0))
+    tela.blit(texto_status, (personagem.rect.x, personagem.rect.bottom + 5))
+
    
