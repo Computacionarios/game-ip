@@ -1,4 +1,8 @@
+# arquivo que a partir da colisão inicia o combate o retorna para a tela de exploração
+
 import pygame
+import sys
+from batalha import Batalha, renderizar_batalha 
 
 class  comp_donpcmapa:
     def __init__(self, tela, velocidade, percurso, npc_larg_hitbox, npc_alt_hitbox):  
@@ -27,8 +31,8 @@ class  comp_donpcmapa:
         pygame.draw.rect(self.tela, (255,0,0), self.NPChitbox)
         
         if self.NPChitbox.colliderect(player):
-
-            print("Batalha iniciada!")
+           return True # Avisa ao loop principal que a batalha deve começar
+            
 
         else:
             
@@ -60,8 +64,103 @@ class  comp_donpcmapa:
                 elif self.NPChitbox.y < self.percurso[self.index_doponto][1]:
                     self.NPChitbox.y += self.velocidade
 
-            print(self.NPChitbox.x, self.NPChitbox.y)
-            print((self.index_doponto))
+            return False # Batalha não iniciada
+        
+#  NOVO LOOP PRINCIPAL DO JOGO
+def iniciar_jogo():
+    pygame.init()
+    
+    LARGURA_INICIAL, ALTURA_INICIAL = 1920, 1080
+    tela = pygame.display.set_mode((LARGURA_INICIAL, ALTURA_INICIAL), pygame.RESIZABLE)
+    pygame.display.set_caption("Exploração e Batalha Elemental")
+    
+    relogio = pygame.time.Clock()
+    FPS = 60 
+    
+    try:
+        fonte_log = pygame.font.SysFont("segoeuiemoji", 28) 
+        fonte_carta_desc = pygame.font.SysFont("arial", 16)
+    except:
+        fonte_log = pygame.font.Font(None, 32)
+        fonte_carta_desc = pygame.font.Font(None, 20)
+        
+    # Variáveis de Exploração (Mapa)
+    jogador_mapa = pygame.Rect(400, 300, 50, 80) # Hitbox do jogador no mapa
+    vel_jogador = 7
+    
+    percurso_npc = [(100, 100), (800, 100), (800, 500), (100, 500)]
+    npc = comp_donpcmapa(tela, 5, percurso_npc, 50, 80)
+    npc_ativo = True # Controla se o NPC ainda existe no mapa
+    
+    # Gerenciador de Estados
+    estado_jogo = "EXPLORACAO" # Começa no mapa
+    instancia_batalha = None
+
+    rodando = True
+    while rodando:
+        LARGURA, ALTURA = tela.get_size()
+        
+        # Cores dinâmicas de fundo dependendo do estado
+        COR_FUNDO = (30, 30, 40) if estado_jogo == "BATALHA" else (50, 150, 70)
+        tela.fill(COR_FUNDO)
+        
+        # PROCESSAMENTO DE EVENTOS
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                rodando = False
+            if evento.type == pygame.VIDEORESIZE:
+                tela = pygame.display.set_mode((evento.w, evento.h), pygame.RESIZABLE)
+                
+            # Inputs específicos de Batalha
+            if estado_jogo == "BATALHA":
+                if evento.type == pygame.KEYDOWN:
+                    if instancia_batalha.aguardando_input:
+                        if (evento.key == pygame.K_LEFT) or (evento.key == pygame.K_a):
+                            instancia_batalha.input("esquerda")
+                        elif (evento.key == pygame.K_RIGHT) or (evento.key == pygame.K_d):
+                            instancia_batalha.input("direita")
+                        elif evento.key in (pygame.K_RETURN, pygame.K_SPACE):
+                            instancia_batalha.input("usar")
+                    elif instancia_batalha.encerrada:
+                        # Se a batalha acabou, pressionar ESC ou ENTER volta pro mapa
+                        if evento.key in (pygame.K_ESCAPE, pygame.K_RETURN, pygame.K_SPACE):
+                            estado_jogo = "EXPLORACAO"
+                            npc_ativo = False # Remove o NPC derrotado do mapa
+
+        # LÓGICA E RENDERIZAÇÃO POR ESTADO
+        if estado_jogo == "EXPLORACAO":
+            # Movimentação do jogador
+            teclas = pygame.key.get_pressed()
+            if teclas[pygame.K_LEFT] or teclas[pygame.K_a]: jogador_mapa.x -= vel_jogador
+            if teclas[pygame.K_RIGHT] or teclas[pygame.K_d]: jogador_mapa.x += vel_jogador
+            if teclas[pygame.K_UP] or teclas[pygame.K_w]: jogador_mapa.y -= vel_jogador
+            if teclas[pygame.K_DOWN] or teclas[pygame.K_s]: jogador_mapa.y += vel_jogador
+
+            # Desenha o Jogador na cor Azul
+            pygame.draw.rect(tela, (0, 128, 255), jogador_mapa)
+
+            # Atualiza o NPC e checa colisão
+            if npc_ativo:
+                iniciou_batalha = npc.atualizar(jogador_mapa)
+                if iniciou_batalha:
+                    # Transição para o estado de Batalha
+                    estado_jogo = "BATALHA"
+                    instancia_batalha = Batalha("Herói")
+
+        elif estado_jogo == "BATALHA":
+            # Roda a lógica e a renderização da batalha
+            instancia_batalha.tick()
+            renderizar_batalha(tela, instancia_batalha, LARGURA, ALTURA, fonte_log, fonte_carta_desc)
+
+        # ATUALIZAÇÃO DA TELA
+        pygame.display.flip()
+        relogio.tick(FPS)
+        
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    iniciar_jogo()
         
 
         
