@@ -1,7 +1,6 @@
 import pygame
 from interfaces.Home import Home
 
-
 class Main:
   def __init__(self):
     pygame.init()

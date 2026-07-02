@@ -3,9 +3,6 @@ import sprites as sprite
 
 pygame.init()
 
-inventario = Inventario()
-
-
 
 ###TELA###
 tamanho_tela = pygame.display.get_desktop_sizes()
@@ -19,193 +16,137 @@ mapa = pygame.transform.scale(mapa, (7955, 4940))
 
 ###PLAYER###
 class Player:
-  def __init__(self):
-    self.x = 1280 / 2
-    self.y = 720 - 32 / 2
+    def __init__(self):
+        self.x = 1280 / 2
+        self.y = 720 - 32 / 2
 
-    (
-      self.run_costas,
-      self.run_frente,
-      self.run_esquerda,
-      self.run_direita,
-      self.parado,
-    ) = sprite.movimento_player()
+        sprites_jogador = sprite.Player()
 
-    self.frame = 0
-    self.atual_pos = 0
-    self.imagem = self.parado[0]
+        self.direcao = sprite.FRENTE
+        self.sprites_andando = sprites_jogador.andando(self.direcao)
+        self.sprites_parado = sprites_jogador.parado(self.direcao)
 
-  def update(self):
-    tecla = pygame.key.get_pressed()
-    if tecla[pygame.K_a] or tecla[pygame.K_LEFT]:
-      self.frame += 0.1
-      self.x += 3
-      self.atual_pos = 1
-
-      if self.frame > len(self.run_esquerda):
         self.frame = 0
+        self.sprites_atuais = self.sprites_parado
 
-      self.imagem = self.run_esquerda[int(self.frame)]
+        self.imagem = self.sprites_atuais[int(self.frame)]
 
-      if personagem.colliderect(barreira):
-        self.x -= 3
+        self.delta_v = 5
 
-    elif tecla[pygame.K_d] or tecla[pygame.K_RIGHT]:
-      self.frame += 0.1
-      self.x -= 3
-      self.atual_pos = 2
+    def eventos(self):
 
-      if self.frame > len(self.run_direita):
-        self.frame = 0
+        tecla = pygame.key.get_pressed()
 
-      self.imagem = self.run_direita[int(self.frame)]
+        self.sprites_atuais = self.sprites_andando
+        if self.frame >= len(self.sprites_atuais) - 1:
+            self.frame = 0
 
-      if personagem.colliderect(barreira):
-        self.x += 3
+        if tecla[pygame.K_a] or tecla[pygame.K_LEFT]:
+            self.frame += 0.1
+            self.direcao = sprite.ESQUERDA
 
-    elif tecla[pygame.K_w] or tecla[pygame.K_UP]:
-      self.frame += 0.1
-      self.y += 3
-      self.atual_pos = 3
+            if self.x + self.delta_v >= barreira.left:
+                self.x += self.delta_v
 
-      if self.frame > len(self.run_costas):
-        self.frame = 0
+        elif tecla[pygame.K_d] or tecla[pygame.K_RIGHT]:
+            self.frame += 0.1
+            self.direcao = sprite.DIREITA
 
-      self.imagem = self.run_costas[int(self.frame)]
+            if self.x - self.delta_v <= barreira.right:
+                self.x -= self.delta_v
 
-      if personagem.colliderect(barreira):
-        self.y -= 3
+        elif tecla[pygame.K_w] or tecla[pygame.K_UP]:
+            self.frame += 0.1
+            self.direcao = sprite.DIREITA
 
-    elif tecla[pygame.K_s] or tecla[pygame.K_DOWN]:
-      self.frame += 0.1
-      self.y -= 3
-      self.atual_pos = 0
+            if self.y + self.delta_v >= barreira.top:
+                self.y += self.delta_v
 
-      if self.frame > len(self.run_frente):
-        self.frame = 0
+        elif tecla[pygame.K_s] or tecla[pygame.K_DOWN]:
+            self.frame += 0.1
+            self.direcao = sprite.DIREITA
 
-      self.imagem = self.run_frente[int(self.frame)]
+            if self.y - self.delta_v <= barreira.bottom:
+                self.y -= self.delta_v
+        else:
+            self.frame = 0
+            self.sprites_atuais = self.sprites_parado
 
-      if personagem.colliderect(barreira):
-        self.y -= 3
+    def update(self):
+        tamanho_sprite = (96, 96)
+        sprites_jogador = sprite.Player()
+        self.sprites_andando = sprites_jogador.andando(self.direcao)
+        self.sprites_parado = sprites_jogador.parado(self.direcao)
+        self.imagem = self.sprites_atuais[int(self.frame)]
+        self.imagem = pygame.transform.scale(self.imagem, tamanho_sprite)
 
-    else:
-      self.frame = 0
-      self.imagem = self.parado[self.atual_pos]
-
-  def draw(self, tela):
-    tamanho_sprite = (96, 96)
-    personagem = pygame.transform.scale(self.imagem, tamanho_sprite)
-    tela.blit(personagem, (1280 // 2, 720 // 2))
-
+    def render(self, tela: pygame.Surface):
+        tela.blit(self.imagem, (tamanho_tela[0][0] // 2, tamanho_tela[0][1] // 2))
 
 
 ###Coletavel###
 
-class Coletavel:
-    def __init__(self, tipo):
-        if tipo == 'cura':
-            self.sprite = sprites.coletavel_cura()
-        elif tipo == 'mana':
-            self.sprite = sprites.coletavel_mana()
-        elif tipo == 'imunidade':
-            self.sprite = sprites.coletavel_imunidade()
-        self.frame = 0
-        self.image = self.sprite[0]
 
-    def update_coletavel(self, x, y):
+class Coletavel:
+    def __init__(self, tipo: str, pos: tuple[int, int]):
+        self.pos = self.x, self.y = pos
+        self.size = self.w, self.h = (40, 40)
+        self.ret = pygame.Rect(self.x, self.y, 32, 32)
+
+        sprites_coletaveis = sprite.Coletavel()
+        if tipo == "util":
+            self.sprites = sprites_coletaveis.util()
+        elif tipo == "forma":
+            self.sprites = sprites_coletaveis.forma()
+        elif tipo == "elemento":
+            self.sprites = sprites_coletaveis.elemento()
+
+        self.frame = 0
+        self.imagem = self.sprites[0]
+
+    def update(self):
         self.frame += 0.1
-        self.x = x
-        self.y = y
-        self.retangulo = pygame.Rect(x, y, 32, 32)
-    
-        if self.frame > len(self.sprite):
+
+        if self.frame > len(self.sprites) - 1:
             self.frame = 0
 
-        self.image = self.sprite[int(self.frame)]
+        self.imagem = self.sprites[int(self.frame)]
 
-    def draw_coletavel(self, tela):
+    def render(self, tela):
         tamanho_sprite = (32, 32)
-        
-        carta = pygame.transform.scale(self.image, tamanho_sprite)
-        tela.blit(carta, (self.x, self.y))
 
+        self.imagem = pygame.transform.scale(self.imagem, tamanho_sprite)
+        tela.blit(self.imagem, (self.x, self.y))
 
 
 player = Player()
 
-cura = Coletavel("cura")
-cura1 = Coletavel("cura")
-cura2 = Coletavel("cura")
-cura3 = Coletavel("cura")
-cura4 = Coletavel("cura")
-cura5 = Coletavel("cura")
+forma = Coletavel("forma", (300, 100))
+elemento = Coletavel("elemento", (300, 100))
+util = Coletavel("util", (300, 100))
 
-mana = Coletavel("mana")
-mana1 = Coletavel("mana")
-mana2 = Coletavel("mana")
-mana3 = Coletavel("mana")
-mana4 = Coletavel("mana")
-mana5 = Coletavel("mana")
+tempo = pygame.Clock()
+rodando = True
+while rodando:
+    ###Camera###
+    camera_x = player.x - 7955 // 2
+    camera_y = player.y - 4940 // 2
 
-imunidade = Coletavel("imunidade")
-imunidade1 = Coletavel("imunidade")
-imunidade2 = Coletavel("imunidade")
+    ###BARREIRA###
+    barreira = pygame.Rect(camera_x, camera_y, 7955, 300)
+    personagem = pygame.Rect(1280 // 2, 720 // 2, 96, 96)
 
-time = pygame.Clock()
+    tempo.tick(60)
+    tela.blit(mapa, (camera_x, camera_y))
 
-continua = True
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            rodando = False
 
+    player.eventos()
+    player.update()
+    player.render(tela)
 
-carta_selecionada = True
-invent = False
-while continua:
-  ###Camera###
-  camera_x = player.x - 7955 // 2
-  camera_y = player.y - 4940 // 2
-
-  ###BARREIRA###
-  barreira = pygame.Rect(camera_x, camera_y + 300, 7955, 300)
-  personagem = pygame.Rect(1280 // 2, 720 // 2, 96, 96)
-
-  time.tick(60)
-  tela.blit(mapa, (camera_x, camera_y))
-
-  for evento in pygame.event.get():
-    if evento.type == pygame.QUIT:
-      continua = False
-
-  player.update()
-
-  player.draw(tela)
-
-  frame1 += 0.1
-  frame2 += 0.1
-  frame3 += 0.1
-
-  if frame1 > len(coletavel_forma):
-    frame1 = 0
-  if frame2 > len(coletavel_elemental):
-    frame2 = 0
-  if frame3 > len(coletavel_utilitario):
-    frame3 = 0
-
-  imagem1 = coletavel_forma[int(frame1)]
-  imagem2 = coletavel_elemental[int(frame2)]
-  imagem3 = coletavel_utilitario[int(frame3)]
-
-  tamanho_sprite = (64, 64)
-
-  carta1 = pygame.transform.scale(imagem1, tamanho_sprite)
-  tela.blit(carta1, (1000 + camera_x, 2000 + camera_y))
-
-  carta2 = pygame.transform.scale(imagem2, tamanho_sprite)
-  tela.blit(carta2, (2000 + camera_x, 1000 + camera_y))
-
-  carta3 = pygame.transform.scale(imagem3, tamanho_sprite)
-  tela.blit(carta3, (3000 + camera_x, 2000 + camera_y))
-
-  pygame.time.wait(1)
-  pygame.display.flip()
+    pygame.display.flip()
 
 pygame.quit()

@@ -7,7 +7,7 @@ def listar(path: str):
 
   for idx, item in enumerate(Path(path).iterdir()):
     if item.is_file() and item.name[0].isdigit():
-      frames.append(pygame.image.load(f"{path}/{idx + 1}.png").convert_alpha())
+      frames.append(pygame.image.load(f"{path}/{idx}.png").convert_alpha())
     return frames
 
 
